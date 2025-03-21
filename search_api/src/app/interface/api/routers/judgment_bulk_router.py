@@ -27,7 +27,7 @@ encoder = SentenceTransformer("all-MiniLM-L6-v2")
 upload_tasks = {}
 MAX_ZIP_SIZE = 50 * 1024 * 1024 * 1024  # 50GB
 
-@router.post("/judgments/upload-bulk-chunked")
+@router.post("/judgments/upload-bulk-chunked", summary="大容量ZIPを受け付け、判例PDFをバックグラウンドでベクトル登録")
 async def upload_bulk_chunked(
     background_tasks: BackgroundTasks,
     request: Request,
@@ -80,7 +80,7 @@ async def upload_bulk_chunked(
     return {"task_id": task_id, "message": "Upload accepted. Processing in background."}
 
 
-@router.get("/judgments/upload-bulk-chunked/status/{task_id}")
+@router.get("/judgments/upload-bulk-chunked/status/{task_id}", summary="バックグラウンド処理の進捗状況を取得")
 def get_upload_status(task_id: str):
     """
     Check the progress/status of a bulk upload task by task_id.
