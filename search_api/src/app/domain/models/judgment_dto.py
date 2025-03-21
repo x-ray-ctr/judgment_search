@@ -17,7 +17,7 @@ class Judgment(BaseModel):
         score: クエリとの類似度スコア（例: cosine similarity）
     """
     payload: Dict
-    score: float
+    score: float = 0.0
 
 
 class JudgmentList(BaseModel):
