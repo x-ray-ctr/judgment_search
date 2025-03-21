@@ -11,7 +11,7 @@ from sentence_transformers import SentenceTransformer
 def handle_judgment_search(query: str, encoder: SentenceTransformer) -> JudgmentList:
     """
     検索クエリに基づいて類似する判例を取得するユースケース。
-
+    → クエリを埋め込みベクトルに変換し、Qdrantで類似チャンクを検索。
     Args:
         query: 検索したい自然言語文
         encoder: テキストをエンコードする埋め込みモデル
