@@ -5,9 +5,11 @@ POST /judgments      -> 新規登録 (Create)
 PUT /judgments/{id}  -> 更新       (Update)
 DELETE /judgments/{id} -> 削除    (Delete)
 """
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Query
 from sentence_transformers import SentenceTransformer
 from app.usecase.judgment_crud import register_judgment, update_judgment, delete_judgment
+from app.usecase.judgment_query import handle_judgment_search
+from app.infrastructure.qdrant.qdrant_gateway import query_judgements_by_id
 
 router = APIRouter()
 encoder = SentenceTransformer("all-MiniLM-L6-v2")
@@ -35,6 +37,47 @@ async def create_judgment(file: UploadFile = File(...), judgment_id: str = "defa
     if num_chunks == 0:
         raise HTTPException(400, "No text extracted from PDF")
     return {"message": f"Created {num_chunks} chunks for judgment_id={judgment_id}"}
+
+
+@router.get("/judgments/{judgment_id}", summary="指定の判例IDのチャンクを取得")
+def get_judgment_by_id(judgment_id: str):
+    """
+    Read by ID: 指定の判例IDに紐づくチャンクをすべて取得。
+
+    Args:
+        judgment_id (str): 取得したい判例のID
+
+    Returns:
+        List[dict]: 例 [{"payload": {...}, "score": None}, ...]
+
+    Raises:
+        HTTPException(404): 該当IDが登録されていない場合
+    """
+    results = query_judgements_by_id(judgment_id)
+    if not results:
+        raise HTTPException(404, f"No data found for judgment_id={judgment_id}")
+    return results
+
+
+@router.get("/judgments/search", summary="ベクトル検索による判例取得")
+def search_judgments(q: str = Query(..., description="検索クエリ (自然言語)"), limit: int = 5):
+    """
+    Read by vector: クエリ文字列を埋め込みベクトルに変換し、Qdrantで類似チャンクを検索。
+
+    Args:
+        q (str): 検索クエリ文字列 (自然言語)
+        limit (int): 取得する件数 (デフォルト 5)
+
+    Returns:
+        dict: 例 { "items": [ { "payload": {...}, "score": 0.75 }, ... ] }
+
+    Raises:
+        HTTPException(404): 類似する結果が存在しない場合
+    """
+    results = handle_judgment_search(query=q, encoder=encoder, limit=limit)
+    if not results.items:
+        raise HTTPException(404, detail="No similar judgments found.")
+    return results
 
 
 @router.put("/judgments/{judgment_id}", summary="既存判例を更新(差し替え)")
