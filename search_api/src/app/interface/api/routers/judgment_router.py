@@ -3,8 +3,8 @@
 """
 
 from fastapi import APIRouter, Query
-from domain.models.judgment_dto import JudgmentList
-from usecase.judgment_query import handle_judgment_search
+from app.domain.models.judgment_dto import JudgmentList
+from app.usecase.judgment_query import handle_judgment_search
 from sentence_transformers import SentenceTransformer
 
 router = APIRouter()

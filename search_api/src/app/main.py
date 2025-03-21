@@ -3,7 +3,7 @@ FastAPI アプリの起動エントリーポイント。
 """
 
 from fastapi import FastAPI
-from interface.api.routers import judgment_router
+from app.interface.api.routers import judgment_router
 
 
 def create_app() -> FastAPI:

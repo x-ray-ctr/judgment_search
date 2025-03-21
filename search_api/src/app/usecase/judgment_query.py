@@ -2,9 +2,9 @@
 ユースケース層 - 判例検索のアプリケーションロジック。
 """
 
-from domain.models.judgment_dto import JudgmentList, Judgment
-from infrastructure.qdrant.qdrant_gateway import query_judgments_by_vector
-from domain.services.search_service import encode_text_to_vector
+from app.domain.models.judgment_dto import JudgmentList, Judgment
+from app.infrastructure.qdrant.qdrant_gateway import query_judgments_by_vector
+from app.domain.services.search_service import encode_text_to_vector
 from sentence_transformers import SentenceTransformer
 
 
