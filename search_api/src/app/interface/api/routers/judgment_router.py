@@ -39,27 +39,7 @@ async def create_judgment(file: UploadFile = File(...), judgment_id: str = "defa
     return {"message": f"Created {num_chunks} chunks for judgment_id={judgment_id}"}
 
 
-@router.get("/judgments/{judgment_id}", summary="指定の判例IDのチャンクを取得")
-def get_judgment_by_id(judgment_id: str):
-    """
-    Read by ID: 指定の判例IDに紐づくチャンクをすべて取得。
-
-    Args:
-        judgment_id (str): 取得したい判例のID
-
-    Returns:
-        List[dict]: 例 [{"payload": {...}, "score": None}, ...]
-
-    Raises:
-        HTTPException(404): 該当IDが登録されていない場合
-    """
-    results = query_judgements_by_id(judgment_id)
-    if not results:
-        raise HTTPException(404, f"No data found for judgment_id={judgment_id}")
-    return results
-
-
-@router.get("/judgments/search", summary="ベクトル検索による判例取得")
+@router.get("/judgments/search-by-vector", summary="ベクトル検索による判例取得")
 def search_judgments(q: str = Query(..., description="検索クエリ (自然言語)"), limit: int = 5):
     """
     Read by vector: クエリ文字列を埋め込みベクトルに変換し、Qdrantで類似チャンクを検索。
@@ -77,6 +57,26 @@ def search_judgments(q: str = Query(..., description="検索クエリ (自然言
     results = handle_judgment_search(query=q, encoder=encoder, limit=limit)
     if not results.items:
         raise HTTPException(404, detail="No similar judgments found.")
+    return results
+
+
+@router.get("/judgments/{judgment_id}", summary="指定の判例IDのチャンクを取得")
+def get_judgment_by_id(judgment_id: str):
+    """
+    Read by ID: 指定の判例IDに紐づくチャンクをすべて取得。
+
+    Args:
+        judgment_id (str): 取得したい判例のID
+
+    Returns:
+        List[dict]: 例 [{"payload": {...}, "score": None}, ...]
+
+    Raises:
+        HTTPException(404): 該当IDが登録されていない場合
+    """
+    results = query_judgements_by_id(judgment_id)
+    if not results:
+        raise HTTPException(404, f"No data found for judgment_id={judgment_id}")
     return results
 
 

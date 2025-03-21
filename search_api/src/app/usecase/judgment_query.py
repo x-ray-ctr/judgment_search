@@ -8,7 +8,7 @@ from app.domain.services.search_service import encode_text_to_vector
 from sentence_transformers import SentenceTransformer
 
 
-def handle_judgment_search(query: str, encoder: SentenceTransformer) -> JudgmentList:
+def handle_judgment_search(query: str, encoder: SentenceTransformer, limit: int = 5) -> JudgmentList:
     """
     検索クエリに基づいて類似する判例を取得するユースケース。
     → クエリを埋め込みベクトルに変換し、Qdrantで類似チャンクを検索。
@@ -20,5 +20,5 @@ def handle_judgment_search(query: str, encoder: SentenceTransformer) -> Judgment
         類似判例のリスト
     """
     vector = encode_text_to_vector(query, encoder)
-    results = query_judgments_by_vector(vector)
+    results = query_judgments_by_vector(vector, limit=limit)
     return JudgmentList(items=[Judgment(**r) for r in results])
