@@ -1,0 +1,57 @@
+name: open-release-pr
+
+on:
+  push:
+    branches: [development]  # developmentにマージ(=push)された時に発火
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  open:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open release PR from development to master if there are diffs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const base = 'master';
+            const head = 'development';
+
+            // 差分チェック
+            const cmp = await github.rest.repos.compareCommitsWithBasehead({
+              owner, repo, basehead: `${base}...${head}`
+            });
+            if (cmp.data.ahead_by === 0) {
+              core.info('No diffs between master and development. Skip.');
+              return;
+            }
+
+            // 既存の開きPRがないかチェック
+            const openPRs = await github.rest.pulls.list({
+              owner, repo, state: 'open', base, head: `${owner}:${head}`
+            });
+            if (openPRs.data.length > 0) {
+              core.info('A release PR already exists. Skip.');
+              return;
+            }
+
+            // PR作成
+            const date = new Date().toISOString().slice(0,10);
+            const title = `release: ${date}`;
+            const body = cmp.data.commits
+              .map(c => `- ${c.commit.message.split('\n')[0]} (${c.sha.slice(0,7)})`)
+              .join('\n');
+
+            const pr = await github.rest.pulls.create({ owner, repo, base, head, title, body });
+            core.notice(`Created PR #${pr.data.number}`);
+
+            // 任意: ラベル付け
+            try {
+              await github.rest.issues.addLabels({
+                owner, repo, issue_number: pr.data.number, labels: ['release']
+              });
+            } catch (e) { core.info('Label add skipped.'); }
