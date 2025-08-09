@@ -2,13 +2,16 @@
 ユースケース層 - 判例検索のアプリケーションロジック。
 """
 
-from ..domain.models.judgment_dto import JudgmentList, Judgment
-from ..infrastructure.qdrant.qdrant_gateway import query_judgments_by_vector
-from ..domain.services.search_service import encode_text_to_vector
 from sentence_transformers import SentenceTransformer
 
+from app.domain.models.judgment_dto import Judgment, JudgmentList
+from app.domain.services.search_service import encode_text_to_vector
+from app.infrastructure.qdrant.qdrant_gateway import query_judgments_by_vector
 
-def handle_judgment_search(query: str, encoder: SentenceTransformer, limit: int = 5) -> JudgmentList:
+
+def handle_judgment_search(
+    query: str, encoder: SentenceTransformer, limit: int = 5
+) -> JudgmentList:
     """
     検索クエリに基づいて類似する判例を取得するユースケース。
     → クエリを埋め込みベクトルに変換し、Qdrantで類似チャンクを検索。

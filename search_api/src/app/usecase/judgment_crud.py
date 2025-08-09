@@ -1,22 +1,22 @@
 """
 ユースケース層 - 判例PDFのCRUD
 """
+
 import uuid
-from typing import List, Dict
+
 from qdrant_client.models import PointStruct
 from sentence_transformers import SentenceTransformer
-from ..domain.services.pdf_parser import parse_pdf_into_chunks
-from ..infrastructure.qdrant.qdrant_gateway import (
-    upsert_judgment_points,
+
+from app.domain.services.pdf_parser import parse_pdf_into_chunks
+from app.infrastructure.qdrant.qdrant_gateway import (
     delete_judgment_points,
     query_judgements_by_id,
+    upsert_judgment_points,
 )
 
 
 def register_judgment(
-    pdf_bytes: bytes,
-    judgment_id: str,
-    encoder: SentenceTransformer
+    pdf_bytes: bytes, judgment_id: str, encoder: SentenceTransformer
 ) -> int:
     """
     Create (C in CRUD): 判例PDFをチャンクに分割してベクトル化し、Qdrantに保存する。
@@ -34,21 +34,17 @@ def register_judgment(
         return 0
 
     vectors = encoder.encode(chunks).tolist()
-    points: List[PointStruct] = []
+    points: list[PointStruct] = []
     for i, chunk_text in enumerate(chunks):
         doc_id = str(uuid.uuid4())
-        payload = {
-            "judgment_id": judgment_id,
-            "chunk_index": i,
-            "text": chunk_text
-        }
+        payload = {"judgment_id": judgment_id, "chunk_index": i, "text": chunk_text}
         points.append(PointStruct(id=doc_id, vector=vectors[i], payload=payload))
 
     upsert_judgment_points(points)
     return len(chunks)
 
 
-def read_judgment(judgment_id: str) -> List[Dict]:
+def read_judgment(judgment_id: str) -> list[dict]:
     """
     Read (R in CRUD): judgment_id に紐づくチャンクを全て取得する。
 
@@ -62,9 +58,7 @@ def read_judgment(judgment_id: str) -> List[Dict]:
 
 
 def update_judgment(
-    pdf_bytes: bytes,
-    judgment_id: str,
-    encoder: SentenceTransformer
+    pdf_bytes: bytes, judgment_id: str, encoder: SentenceTransformer
 ) -> int:
     """
     Update (U in CRUD): 既存の判例データを削除したうえで再登録する。

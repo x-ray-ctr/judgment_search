@@ -4,23 +4,24 @@
 .env から環境変数 QDRANT_HOST, QDRANT_PORT を読み込み。
 Qdrant ではコレクション自動作成されないため、create_judgement_collection() で初期化を行う。
 """
+
 import os
-from typing import List, Dict
+
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
 from qdrant_client.models import (
-    Filter,
+    Distance,
     FieldCondition,
+    Filter,
     MatchValue,
     PointStruct,
     VectorParams,
-    Distance,
 )
 
 load_dotenv()
 
 QDRANT_HOST = os.getenv("QDRANT_HOST", "localhost")
-QDRANT_PORT = os.getenv("QDRANT_PORT", "6333")
+QDRANT_PORT = int(os.getenv("QDRANT_PORT", "6333"))
 
 client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
 
@@ -44,10 +45,10 @@ def create_judgement_collection() -> None:
         print("コレクション 'judgments' を作成しました。")
 
 
-def query_judgments_by_vector(vector: List[float], limit: int = 5) -> List[Dict]:
+def query_judgments_by_vector(vector: list[float], limit: int = 5) -> list[dict]:
     """
     ベクトルに基づいて Qdrant から類似判例を検索する。
-    
+
     **ベクトル検索**のため、クエリベクトルと近いもの順に上位が返る。
     → 「検索クエリを埋め込みしたベクトル」を与えると、
        コレクション内のチャンクとの類似度が高い順に取得できる。
@@ -57,7 +58,7 @@ def query_judgments_by_vector(vector: List[float], limit: int = 5) -> List[Dict]
         limit (int): 取得する件数 (デフォルト 5)
 
     Returns:
-        List[Dict]: 
+        List[Dict]:
             - 要素は {"payload": dict, "score": float} 形式
             - "score" はベクトル類似度を示す指標
     """
@@ -70,10 +71,10 @@ def query_judgments_by_vector(vector: List[float], limit: int = 5) -> List[Dict]
     return [{"payload": hit.payload, "score": hit.score} for hit in hits]
 
 
-def query_judgements_by_id(judgement_id: str) -> List[Dict]:
+def query_judgements_by_id(judgement_id: str) -> list[dict]:
     """
     ID(judgment_id) に紐づくチャンクをすべて取得する。
-    
+
     **主に「特定IDを持つデータをフィルタで一括取得」**するのが目的。
     → 判例ID（judgment_id）をキーとして検索し、すべてのチャンクを返す。
 
@@ -89,7 +90,9 @@ def query_judgements_by_id(judgement_id: str) -> List[Dict]:
     points, next_page = client.scroll(
         collection_name="judgments",
         scroll_filter=Filter(
-            must=[FieldCondition(key="judgment_id", match=MatchValue(value=judgement_id))]
+            must=[
+                FieldCondition(key="judgment_id", match=MatchValue(value=judgement_id))
+            ]
         ),
         limit=1000,
         offset=None,
@@ -103,7 +106,11 @@ def query_judgements_by_id(judgement_id: str) -> List[Dict]:
         points, next_page = client.scroll(
             collection_name="judgments",
             scroll_filter=Filter(
-                must=[FieldCondition(key="judgment_id", match=MatchValue(value=judgement_id))]
+                must=[
+                    FieldCondition(
+                        key="judgment_id", match=MatchValue(value=judgement_id)
+                    )
+                ]
             ),
             limit=1000,
             offset=next_page,
@@ -114,7 +121,7 @@ def query_judgements_by_id(judgement_id: str) -> List[Dict]:
     return [{"payload": hit.payload, "score": None} for hit in all_results]
 
 
-def upsert_judgment_points(points: List[PointStruct]) -> None:
+def upsert_judgment_points(points: list[PointStruct]) -> None:
     """
     ポイント(ベクトル+payload)をまとめてアップサートする。
     コレクション名「judgments」固定。
@@ -141,6 +148,8 @@ def delete_judgment_points(judgment_id: str) -> None:
     client.delete(
         collection_name="judgments",
         points_selector=Filter(
-            must=[FieldCondition(key="judgment_id", match=MatchValue(value=judgment_id))]
-        )
+            must=[
+                FieldCondition(key="judgment_id", match=MatchValue(value=judgment_id))
+            ]
+        ),
     )
