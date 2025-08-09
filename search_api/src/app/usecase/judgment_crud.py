@@ -7,8 +7,8 @@ import uuid
 from qdrant_client.models import PointStruct
 from sentence_transformers import SentenceTransformer
 
-from ..domain.services.pdf_parser import parse_pdf_into_chunks
-from ..infrastructure.qdrant.qdrant_gateway import (
+from app.domain.services.pdf_parser import parse_pdf_into_chunks
+from app.infrastructure.qdrant.qdrant_gateway import (
     delete_judgment_points,
     query_judgements_by_id,
     upsert_judgment_points,

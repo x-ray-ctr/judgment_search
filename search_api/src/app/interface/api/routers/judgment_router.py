@@ -9,13 +9,13 @@ DELETE /judgments/{id} -> 削除    (Delete)
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from sentence_transformers import SentenceTransformer
 
-from ....infrastructure.qdrant.qdrant_gateway import query_judgements_by_id
-from ....usecase.judgment_crud import (
+from app.infrastructure.qdrant.qdrant_gateway import query_judgements_by_id
+from app.usecase.judgment_crud import (
     delete_judgment,
     register_judgment,
     update_judgment,
 )
-from ....usecase.judgment_query import handle_judgment_search
+from app.usecase.judgment_query import handle_judgment_search
 
 router = APIRouter()
 encoder = SentenceTransformer("all-MiniLM-L6-v2")
@@ -24,7 +24,7 @@ encoder = SentenceTransformer("all-MiniLM-L6-v2")
 @router.post("/judgments", summary="1件の判例PDFをアップロードして新規登録")
 async def create_judgment(
     file: UploadFile = File(...), judgment_id: str = "default-id"
-):
+) -> dict:
     """
     Create: PDFを1件アップロードし、Qdrantの "judgments" コレクションに登録する。
 
@@ -51,7 +51,7 @@ async def create_judgment(
 @router.get("/judgments/search-by-vector", summary="ベクトル検索による判例取得")
 def search_judgments(
     q: str = Query(..., description="検索クエリ (自然言語)"), limit: int = 5
-):
+) -> dict:
     """
     Read by vector: クエリ文字列を埋め込みベクトルに変換し、Qdrantで類似チャンクを検索。
 
@@ -72,7 +72,7 @@ def search_judgments(
 
 
 @router.get("/judgments/{judgment_id}", summary="指定の判例IDのチャンクを取得")
-def get_judgment_by_id(judgment_id: str):
+def get_judgment_by_id(judgment_id: str) -> list[dict]:
     """
     Read by ID: 指定の判例IDに紐づくチャンクをすべて取得。
 
@@ -92,7 +92,7 @@ def get_judgment_by_id(judgment_id: str):
 
 
 @router.put("/judgments/{judgment_id}", summary="既存判例を更新(差し替え)")
-async def modify_judgment(judgment_id: str, file: UploadFile = File(...)):
+async def modify_judgment(judgment_id: str, file: UploadFile = File(...)) -> dict:
     """
     Update: 既存の判例データを削除し、新たにPDFをアップロードして再登録する。
 
@@ -115,7 +115,7 @@ async def modify_judgment(judgment_id: str, file: UploadFile = File(...)):
 
 
 @router.delete("/judgments/{judgment_id}", summary="指定判例を削除")
-async def remove_judgment(judgment_id: str):
+async def remove_judgment(judgment_id: str) -> dict:
     """
     Delete: 指定の判例IDに紐づくデータをQdrantからすべて削除する。
 

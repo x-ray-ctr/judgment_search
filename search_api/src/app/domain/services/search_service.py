@@ -2,7 +2,6 @@
 ドメイン層 - 検索ロジックを提供する純粋関数群。
 """
 
-
 import numpy as np
 from sentence_transformers import SentenceTransformer
 

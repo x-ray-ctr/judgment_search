@@ -23,7 +23,7 @@ def create_app() -> FastAPI:
 
     # start_appイベントでコレクション作成など初期処理
     @app.on_event("startup")
-    def on_startup():
+    def on_startup() -> None:
         create_judgement_collection()
 
     return app
@@ -32,7 +32,7 @@ def create_app() -> FastAPI:
 app = create_app()
 
 
-def main():
+def main() -> None:
     """
     CLI経由で起動された場合に呼ばれるメイン関数。
     開発・デバッグ用の確認メッセージを表示。

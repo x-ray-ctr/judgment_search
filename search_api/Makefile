@@ -21,7 +21,11 @@ dev-full: docker-up
 
 # CI/CD コマンド
 lint:
-	uv run ruff check .
+	make format
+	make format-check
+	make type-check
+	make fix
+
 
 format:
 	uv run black .

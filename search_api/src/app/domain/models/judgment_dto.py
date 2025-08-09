@@ -4,7 +4,6 @@
 本モジュールでは、検索APIのレスポンスとして返却される構造（1件および複数件）を定義します。
 """
 
-
 from pydantic import BaseModel
 
 

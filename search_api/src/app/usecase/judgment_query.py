@@ -4,9 +4,9 @@
 
 from sentence_transformers import SentenceTransformer
 
-from ..domain.models.judgment_dto import Judgment, JudgmentList
-from ..domain.services.search_service import encode_text_to_vector
-from ..infrastructure.qdrant.qdrant_gateway import query_judgments_by_vector
+from app.domain.models.judgment_dto import Judgment, JudgmentList
+from app.domain.services.search_service import encode_text_to_vector
+from app.infrastructure.qdrant.qdrant_gateway import query_judgments_by_vector
 
 
 def handle_judgment_search(

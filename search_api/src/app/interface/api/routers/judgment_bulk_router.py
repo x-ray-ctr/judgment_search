@@ -17,9 +17,9 @@ from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Request, Up
 from qdrant_client.models import PointStruct
 from sentence_transformers import SentenceTransformer
 
-from ....domain.services.pdf_parser import parse_pdf_into_chunks
-from ....domain.services.zip_extractor import extract_pdfs_from_disk
-from ....infrastructure.qdrant.qdrant_gateway import upsert_judgment_points
+from app.domain.services.pdf_parser import parse_pdf_into_chunks
+from app.domain.services.zip_extractor import extract_pdfs_from_disk
+from app.infrastructure.qdrant.qdrant_gateway import upsert_judgment_points
 
 router = APIRouter()
 encoder = SentenceTransformer("all-MiniLM-L6-v2")
@@ -36,7 +36,7 @@ async def upload_bulk_chunked(
     background_tasks: BackgroundTasks,
     request: Request,
     file: UploadFile = File(...),
-):
+) -> dict:
     """
     Upload a large ZIP file and process it in the background.
 
@@ -88,7 +88,7 @@ async def upload_bulk_chunked(
     "/judgments/upload-bulk-chunked/status/{task_id}",
     summary="バックグラウンド処理の進捗状況を取得",
 )
-def get_upload_status(task_id: str):
+def get_upload_status(task_id: str) -> dict:
     """
     Check the progress/status of a bulk upload task by task_id.
 
@@ -112,7 +112,7 @@ def get_upload_status(task_id: str):
     return upload_tasks[task_id]
 
 
-def _process_zip_in_background(zip_path: str, task_id: str):
+def _process_zip_in_background(zip_path: str, task_id: str) -> None:
     """
     バックグラウンドでZIPを解凍→PDF抽出→チャンク化→ベクトル化→Qdrant登録。
     実行後はupload_tasks[task_id]に進捗・完了状況を格納。
