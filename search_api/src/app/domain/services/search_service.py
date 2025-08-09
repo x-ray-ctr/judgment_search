@@ -2,12 +2,12 @@
 ドメイン層 - 検索ロジックを提供する純粋関数群。
 """
 
-from sentence_transformers import SentenceTransformer
-from typing import List
+
 import numpy as np
+from sentence_transformers import SentenceTransformer
 
 
-def encode_text_to_vector(text: str, model: SentenceTransformer) -> List[float]:
+def encode_text_to_vector(text: str, model: SentenceTransformer) -> list[float]:
     """
     入力テキストをベクトルに変換する純粋関数。
 
@@ -21,7 +21,7 @@ def encode_text_to_vector(text: str, model: SentenceTransformer) -> List[float]:
     return model.encode(text).tolist()
 
 
-def compute_cosine_similarity(vec_a: List[float], vec_b: List[float]) -> float:
+def compute_cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
     """
     2つのベクトル間のコサイン類似度を計算する。
 

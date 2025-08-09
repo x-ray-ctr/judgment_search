@@ -8,18 +8,18 @@
 - GET /judgments/upload-bulk-chunked/status/{task_id}: タスクの進捗を確認
 """
 
-from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks, Request
-from typing import List
 import os
-import uuid
 import shutil
 import tempfile
+import uuid
 
-from ....domain.services.zip_extractor import extract_pdfs_from_disk
-from ....domain.services.pdf_parser import parse_pdf_into_chunks
-from ....infrastructure.qdrant.qdrant_gateway import upsert_judgment_points
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Request, UploadFile
 from qdrant_client.models import PointStruct
 from sentence_transformers import SentenceTransformer
+
+from ....domain.services.pdf_parser import parse_pdf_into_chunks
+from ....domain.services.zip_extractor import extract_pdfs_from_disk
+from ....infrastructure.qdrant.qdrant_gateway import upsert_judgment_points
 
 router = APIRouter()
 encoder = SentenceTransformer("all-MiniLM-L6-v2")
@@ -27,7 +27,11 @@ encoder = SentenceTransformer("all-MiniLM-L6-v2")
 upload_tasks = {}
 MAX_ZIP_SIZE = 50 * 1024 * 1024 * 1024  # 50GB
 
-@router.post("/judgments/upload-bulk-chunked", summary="大容量ZIPを受け付け、判例PDFをバックグラウンドでベクトル登録")
+
+@router.post(
+    "/judgments/upload-bulk-chunked",
+    summary="大容量ZIPを受け付け、判例PDFをバックグラウンドでベクトル登録",
+)
 async def upload_bulk_chunked(
     background_tasks: BackgroundTasks,
     request: Request,
@@ -73,14 +77,17 @@ async def upload_bulk_chunked(
         "status": "in_progress",
         "detail": "Initializing",
         "processed_pdf": 0,
-        "total_pdf": 0
+        "total_pdf": 0,
     }
     background_tasks.add_task(_process_zip_in_background, zip_path, task_id)
 
     return {"task_id": task_id, "message": "Upload accepted. Processing in background."}
 
 
-@router.get("/judgments/upload-bulk-chunked/status/{task_id}", summary="バックグラウンド処理の進捗状況を取得")
+@router.get(
+    "/judgments/upload-bulk-chunked/status/{task_id}",
+    summary="バックグラウンド処理の進捗状況を取得",
+)
 def get_upload_status(task_id: str):
     """
     Check the progress/status of a bulk upload task by task_id.
@@ -149,15 +156,17 @@ def _process_zip_in_background(zip_path: str, task_id: str):
 
             for i, text_chunk in enumerate(chunks):
                 pid = str(uuid.uuid4())
-                points.append(PointStruct(
-                    id=pid,
-                    vector=vectors[i],
-                    payload={
-                        "judgment_id": judgment_id,
-                        "chunk_index": i,
-                        "text": text_chunk
-                    }
-                ))
+                points.append(
+                    PointStruct(
+                        id=pid,
+                        vector=vectors[i],
+                        payload={
+                            "judgment_id": judgment_id,
+                            "chunk_index": i,
+                            "text": text_chunk,
+                        },
+                    )
+                )
             upsert_judgment_points(points)
             count_chunks += len(chunks)
 

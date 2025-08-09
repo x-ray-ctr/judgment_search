@@ -5,17 +5,26 @@ POST /judgments      -> 新規登録 (Create)
 PUT /judgments/{id}  -> 更新       (Update)
 DELETE /judgments/{id} -> 削除    (Delete)
 """
-from fastapi import APIRouter, UploadFile, File, HTTPException, Query
+
+from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from sentence_transformers import SentenceTransformer
-from ....usecase.judgment_crud import register_judgment, update_judgment, delete_judgment
-from ....usecase.judgment_query import handle_judgment_search
+
 from ....infrastructure.qdrant.qdrant_gateway import query_judgements_by_id
+from ....usecase.judgment_crud import (
+    delete_judgment,
+    register_judgment,
+    update_judgment,
+)
+from ....usecase.judgment_query import handle_judgment_search
 
 router = APIRouter()
 encoder = SentenceTransformer("all-MiniLM-L6-v2")
 
+
 @router.post("/judgments", summary="1件の判例PDFをアップロードして新規登録")
-async def create_judgment(file: UploadFile = File(...), judgment_id: str = "default-id"):
+async def create_judgment(
+    file: UploadFile = File(...), judgment_id: str = "default-id"
+):
     """
     Create: PDFを1件アップロードし、Qdrantの "judgments" コレクションに登録する。
 
@@ -40,7 +49,9 @@ async def create_judgment(file: UploadFile = File(...), judgment_id: str = "defa
 
 
 @router.get("/judgments/search-by-vector", summary="ベクトル検索による判例取得")
-def search_judgments(q: str = Query(..., description="検索クエリ (自然言語)"), limit: int = 5):
+def search_judgments(
+    q: str = Query(..., description="検索クエリ (自然言語)"), limit: int = 5
+):
     """
     Read by vector: クエリ文字列を埋め込みベクトルに変換し、Qdrantで類似チャンクを検索。
 

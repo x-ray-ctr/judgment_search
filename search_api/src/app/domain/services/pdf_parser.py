@@ -2,9 +2,11 @@
 pdfplumberを利用し、PDF→テキスト抽出→(必要に応じ)チャンク分割
 本番運用ではページ単位抽出も検討できるが、ここではシンプルに全文連結
 """
-import pdfplumber
+
 import io
-from typing import List
+
+import pdfplumber
+
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
     """
@@ -17,7 +19,8 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
             lines.append(text)
     return "\n".join(lines)
 
-def chunk_text(text: str, max_chars_per_chunk: int=2000) -> List[str]:
+
+def chunk_text(text: str, max_chars_per_chunk: int = 2000) -> list[str]:
     """
     文字数に応じてテキストを分割する純粋関数
     """
@@ -31,7 +34,10 @@ def chunk_text(text: str, max_chars_per_chunk: int=2000) -> List[str]:
         start = end
     return results
 
-def parse_pdf_into_chunks(pdf_bytes: bytes, max_chars_per_chunk: int=2000) -> List[str]:
+
+def parse_pdf_into_chunks(
+    pdf_bytes: bytes, max_chars_per_chunk: int = 2000
+) -> list[str]:
     """
     PDFバイト列→全文抽出→チャンク分割
     """
