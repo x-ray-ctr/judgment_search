@@ -3,8 +3,8 @@ FastAPI アプリの起動エントリーポイント。
 """
 
 from fastapi import FastAPI
-from app.interface.api.routers import judgment_router, judgment_bulk_router
-from app.infrastructure.qdrant.qdrant_gateway import create_judgement_collection
+from .interface.api.routers import judgment_router, judgment_bulk_router
+from .infrastructure.qdrant.qdrant_gateway import create_judgement_collection
 
 
 def create_app() -> FastAPI:

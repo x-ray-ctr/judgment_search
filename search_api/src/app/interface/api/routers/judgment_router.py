@@ -7,9 +7,9 @@ DELETE /judgments/{id} -> 削除    (Delete)
 """
 from fastapi import APIRouter, UploadFile, File, HTTPException, Query
 from sentence_transformers import SentenceTransformer
-from app.usecase.judgment_crud import register_judgment, update_judgment, delete_judgment
-from app.usecase.judgment_query import handle_judgment_search
-from app.infrastructure.qdrant.qdrant_gateway import query_judgements_by_id
+from ....usecase.judgment_crud import register_judgment, update_judgment, delete_judgment
+from ....usecase.judgment_query import handle_judgment_search
+from ....infrastructure.qdrant.qdrant_gateway import query_judgements_by_id
 
 router = APIRouter()
 encoder = SentenceTransformer("all-MiniLM-L6-v2")

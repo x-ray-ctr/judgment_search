@@ -15,9 +15,9 @@ import uuid
 import shutil
 import tempfile
 
-from app.domain.services.zip_extractor import extract_pdfs_from_disk
-from app.domain.services.pdf_parser import parse_pdf_into_chunks
-from app.infrastructure.qdrant.qdrant_gateway import upsert_judgment_points
+from ....domain.services.zip_extractor import extract_pdfs_from_disk
+from ....domain.services.pdf_parser import parse_pdf_into_chunks
+from ....infrastructure.qdrant.qdrant_gateway import upsert_judgment_points
 from qdrant_client.models import PointStruct
 from sentence_transformers import SentenceTransformer
 
