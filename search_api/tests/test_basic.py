@@ -13,6 +13,7 @@ def test_import_app():
     """アプリケーションのインポートテスト"""
     try:
         from app.main import create_app
+
         app = create_app()
         assert app is not None
     except ImportError:
