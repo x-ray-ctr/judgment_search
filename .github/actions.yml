@@ -1,0 +1,13 @@
+# GitHub Actions permissions configuration
+# This file configures the permissions for GitHub Actions
+
+# Allow GitHub Actions to create pull requests
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  checks: write
+  statuses: write
+
+# Allow GitHub Actions to create and approve pull requests
+# This is required for the release-pr workflow
