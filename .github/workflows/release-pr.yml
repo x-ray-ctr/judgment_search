@@ -4,17 +4,25 @@ on:
   push:
     branches: [development]  # developmentにマージ(=push)された時に発火
 
+# ワークフロー全体の権限設定
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   open:
     runs-on: ubuntu-latest
+    # ジョブレベルの権限設定（より制限的）
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     steps:
       - name: Open release PR from development to master if there are diffs
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
@@ -46,12 +54,22 @@ jobs:
               .map(c => `- ${c.commit.message.split('\n')[0]} (${c.sha.slice(0,7)})`)
               .join('\n');
 
-            const pr = await github.rest.pulls.create({ owner, repo, base, head, title, body });
-            core.notice(`Created PR #${pr.data.number}`);
-
-            // 任意: ラベル付け
             try {
-              await github.rest.issues.addLabels({
-                owner, repo, issue_number: pr.data.number, labels: ['release']
-              });
-            } catch (e) { core.info('Label add skipped.'); }
+              const pr = await github.rest.pulls.create({ owner, repo, base, head, title, body });
+              core.notice(`Created PR #${pr.data.number}`);
+              
+              // 任意: ラベル付け
+              try {
+                await github.rest.issues.addLabels({
+                  owner, repo, issue_number: pr.data.number, labels: ['release']
+                });
+                core.info('Added release label to PR');
+              } catch (e) { 
+                core.info(`Label add skipped: ${e.message}`); 
+              }
+            } catch (error) {
+              core.error(`Failed to create pull request: ${error.message}`);
+              core.error(`Status: ${error.status}`);
+              core.error(`Response: ${JSON.stringify(error.response?.data, null, 2)}`);
+              throw error;
+            }
